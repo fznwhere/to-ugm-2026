@@ -1,0 +1,20 @@
+{
+  "name": "TO UGM 2026",
+  "short_name": "TO UGM",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0C1B2E",
+  "theme_color": "#0C1B2E",
+  "icons": [
+    {
+      "src": "assets/img/logo_ugm.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/logo_ugm.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
