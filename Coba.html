@@ -354,7 +354,7 @@
         "Jantungku sekarang adalah milikmu. Pakailah untuk belajar. — (Pochita)",
         "Hiduplah, dan wujudkan impianmu. — (Pochita)",
         "Woi! Kalau mau hidup enak, habisin dulu soal-soal ini! — (Denji)",
-        "Aku cuma pengen hidup normal... jadi mahasiswa UGM! Kamu juga kan? — (Denji)",
+        "Aku cuma pengen hidup normal... jadi mahasiswa UGM Kamu juga kan? — (Denji)",
         "Berlututlah wahai soal susah! Sang Power yang jenius akan melibasmu! — (Power)",
         "Jangan takut! Ada aku yang hebat ini. UTBK itu kecil! — (Power)",
         "Ubah rasa takut gagalmu menjadi senjata! — (Asa Mitaka)",
@@ -378,80 +378,100 @@
         startCountdown();
     });
 
-    // --- CHART LOGIC (BARU) ---
+// --- CHART LOGIC TERBARU (SEQUENTIAL) ---
     function renderCharts(data) {
+        // Ambil data yang statusnya 'Selesai', urutkan berdasarkan Tanggal pengerjaan
         const finishedTOs = data.filter(i => i.status === 'Selesai').sort((a,b) => new Date(a.date) - new Date(b.date));
         
         const chartSec = document.getElementById('chartSection');
         if(finishedTOs.length < 2) {
-            chartSec.style.display = 'none'; // Kalau data < 2, jangan tampilkan grafik dulu
+            chartSec.style.display = 'none'; 
             return;
         }
         chartSec.style.display = 'block';
 
-        // Persiapan Data
-        const labels = finishedTOs.map(i => {
-            let d = new Date(i.date);
-            return `${i.platform} (${d.getDate()}/${d.getMonth()+1})`;
-        });
-        
-        const scores = finishedTOs.map(i => i.officialScore > 0 ? i.officialScore : i.calcScore);
+        // --- 1. SETUP GRAFIK GLOBAL (URUT WAKTU) ---
+        // Labelnya kita buat simpel: Nama Platform + Nama TO (Tanpa Tanggal biar ga bingung)
+        const globalLabels = finishedTOs.map(i => `${i.platform} - ${i.toName}`);
+        const globalScores = finishedTOs.map(i => i.officialScore > 0 ? i.officialScore : i.calcScore);
 
-        // 1. GLOBAL CHART
         const ctxGlobal = document.getElementById('globalChart').getContext('2d');
         if(globalChartInstance) globalChartInstance.destroy();
 
         globalChartInstance = new Chart(ctxGlobal, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: globalLabels, // Label urut sesuai pengerjaan
                 datasets: [{
-                    label: 'Skor TO',
-                    data: scores,
-                    borderColor: '#D4AF37', // Gold
+                    label: 'Skor',
+                    data: globalScores,
+                    borderColor: '#D4AF37', // Warna Emas
                     backgroundColor: 'rgba(212, 175, 55, 0.1)',
                     borderWidth: 3,
                     pointBackgroundColor: '#fff',
-                    pointRadius: 4,
-                    tension: 0.3,
+                    pointRadius: 5, // Titik agak besar biar jelas
+                    pointHoverRadius: 7,
+                    tension: 0.3, // Garis agak melengkung dikit
                     fill: true
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { legend: { display: false } }, // Hilangkan legenda "Skor"
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#ccc' } },
-                    x: { grid: { display: false }, ticks: { color: '#aaa', font:{size:10} } }
-                }
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' }, 
+                        ticks: { color: '#ccc' },
+                        suggestedMin: 400 // Biar grafik ga mulai dari 0 (lebih fokus)
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { display: false } // Hilangkan tulisan bawah biar bersih (karena sudah ada tooltip)
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
             }
         });
 
-        // 2. PLATFORM CHART
-        // Kelompokkan data per platform
+        // --- 2. SETUP GRAFIK PER PLATFORM (START SAMA) ---
+        
+        // Langkah A: Kelompokkan nilai per platform
         let platforms = {};
         finishedTOs.forEach(i => {
             if(!platforms[i.platform]) platforms[i.platform] = [];
-            platforms[i.platform].push({
-                x: labels[finishedTOs.indexOf(i)],
-                y: i.officialScore > 0 ? i.officialScore : i.calcScore
-            });
+            // Kita cuma butuh nilainya saja, urut dari yang pertama dikerjakan
+            platforms[i.platform].push(i.officialScore > 0 ? i.officialScore : i.calcScore);
         });
 
-        const colors = ['#4A90E2', '#ff4757', '#2ed573', '#eccc68', '#ffa502'];
+        // Langkah B: Cari siapa yang paling rajin (TO terbanyak) buat nentuin panjang sumbu X
+        let maxCount = 0;
+        for (let p in platforms) {
+            if (platforms[p].length > maxCount) maxCount = platforms[p].length;
+        }
+
+        // Langkah C: Bikin label sumbu X (TO Ke-1, TO Ke-2, dst)
+        let platformLabels = [];
+        for(let i=1; i<=maxCount; i++) platformLabels.push("TO Ke-" + i);
+
+        // Langkah D: Siapkan Datasets warna-warni
+        const colors = ['#4A90E2', '#ff4757', '#2ed573', '#eccc68', '#ffa502', '#d1ccc0'];
         let datasets = [];
         let colorIdx = 0;
 
         for (let p in platforms) {
             datasets.push({
                 label: p,
-                data: platforms[p],
+                data: platforms[p], // Data otomatis masuk ke index 0, 1, 2... (Start kiri)
                 borderColor: colors[colorIdx % colors.length],
                 backgroundColor: colors[colorIdx % colors.length],
                 borderWidth: 2,
                 tension: 0.2,
-                pointRadius: 3
+                pointRadius: 4,
+                pointHoverRadius: 6
             });
             colorIdx++;
         }
@@ -462,18 +482,31 @@
         platformChartInstance = new Chart(ctxPlatform, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: platformLabels, // Sumbu X: TO Ke-1, TO Ke-2...
                 datasets: datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { 
-                    legend: { labels: { color: '#fff', boxWidth: 10, font:{size:10} } } 
+                    legend: { labels: { color: '#fff', boxWidth: 10, font:{size:11} } },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label; // Judul Tooltip: "TO Ke-X"
+                            }
+                        }
+                    }
                 },
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#ccc' } },
-                    x: { grid: { display: false }, ticks: { display: false } } // Hide X labels biar ga numpuk
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' }, 
+                        ticks: { color: '#ccc' } 
+                    },
+                    x: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#aaa', font:{size:10} } // Tampilkan tulisan "TO Ke-1"
+                    }
                 }
             }
         });
