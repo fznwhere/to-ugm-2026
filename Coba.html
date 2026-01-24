@@ -71,7 +71,12 @@
         }
         
         .quote-text { font-size: 0.85em; color: var(--text-secondary); font-style: italic; margin-top: 5px; font-weight: normal; opacity: 0.9; line-height: 1.4; }
-        .btn-settings-img { width: 38px; height: 38px; object-fit: contain; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: transform 0.2s; margin-top: 5px; }
+        
+        .btn-settings-img { 
+            width: 38px; height: 38px; object-fit: contain; cursor: pointer; 
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4)); /* Glow dikit buat setting */
+            transition: transform 0.2s; margin-top: 5px; 
+        }
         .btn-settings-img:active { transform: scale(0.9); }
 
         /* Health Bar */
@@ -79,8 +84,18 @@
         .health-bar-fill { height: 100%; background: linear-gradient(90deg, #ff4757, #e84118); width: 0%; display: flex; align-items: center; justify-content: center; transition: width 1s ease, background 1s ease; }
         .health-text { font-size: 0.7em; color: white; font-weight: bold; position: absolute; top:0; width: 100%; text-align: center; line-height: 22px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); letter-spacing: 0.5px; z-index: 2; }
 
-        h3 { color: var(--accent-gold); margin-top: 0; border-bottom: 1px dashed var(--accent-gold); padding-bottom: 10px; font-size: 1.2em; display: flex; align-items: center; gap: 10px; }
-        .icon-title { width: 28px; height: 28px; object-fit: contain; }
+        h3 { 
+            color: var(--accent-gold); margin-top: 0; 
+            border-bottom: 1px dashed var(--accent-gold); padding-bottom: 10px; 
+            font-size: 1.2em; display: flex; align-items: center; gap: 10px; 
+        }
+
+        /* --- UPDATE: ICON GLOW EFFECT (Hanya untuk Icon Judul) --- */
+        .icon-title { 
+            width: 28px; height: 28px; object-fit: contain;
+            /* Efek Drop Shadow Emas/Terang biar menyala di background gelap */
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.9)); 
+        }
 
         /* --- TARGET CARD --- */
         .target-card-contract {
@@ -147,15 +162,19 @@
         .btn-modal { flex: 1; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
         .btn-edit { background: var(--accent-blue); color: white; }
         .btn-delete { background: var(--accent-orange); color: white; }
+        
+        /* Empty State Image (NO GLOW - As Requested) */
         .empty-state { text-align: center; padding: 40px 20px; opacity: 0.9; }
-        .empty-pochita { width: 150px; margin-bottom: 15px; filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #feca57) brightness(1.1); }
+        .empty-pochita { 
+            width: 150px; margin-bottom: 15px; 
+            filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #feca57) brightness(1.1); /* Ini efek bawaan pochita sleep */
+        }
         
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(0deg); } }
     </style>
     
     <script>
         if ('serviceWorker' in navigator) {
-            // Sesuai nama file di repo kamu (biar ga usah rename lagi)
             navigator.serviceWorker.register('sw-final.js').catch(err => console.log(err));
         }
     </script>
@@ -235,7 +254,7 @@
         </div>
 
         <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
-            <div style="font-size:0.8em; color:var(--accent-orange); margin-bottom:5px; font-weight:bold;">PER PLATFORM</div>
+            <div style="font-size:0.8em; color:var(--accent-orange); margin-bottom:5px; font-weight:bold;">PER PLATFORM (START SAMA)</div>
             <div class="chart-wrapper">
                 <canvas id="platformChart"></canvas>
             </div>
@@ -337,7 +356,6 @@
         { id: 401, name: "Prodi D3 (Pilihan Luar)", grade: 600, type: "D3" }
     ];
 
-    // CONFIG SOAL (SESUAI REQUEST: PK 20 SOAL)
     const SUBTEST_CONFIG = [
         { id: 'pu', label: 'PU', total: 30, weight: 1.0 },
         { id: 'ppu', label: 'PPU', total: 20, weight: 1.0 },
@@ -354,7 +372,7 @@
         "Jantungku sekarang adalah milikmu. Pakailah untuk belajar. — (Pochita)",
         "Hiduplah, dan wujudkan impianmu. — (Pochita)",
         "Woi! Kalau mau hidup enak, habisin dulu soal-soal ini! — (Denji)",
-        "Aku cuma pengen hidup normal... jadi mahasiswa UGM Kamu juga kan? — (Denji)",
+        "Aku cuma pengen hidup normal... jadi mahasiswa UGM! Kamu juga kan? — (Denji)",
         "Berlututlah wahai soal susah! Sang Power yang jenius akan melibasmu! — (Power)",
         "Jangan takut! Ada aku yang hebat ini. UTBK itu kecil! — (Power)",
         "Ubah rasa takut gagalmu menjadi senjata! — (Asa Mitaka)",
@@ -372,15 +390,14 @@
         fixDataTypes(); 
         generateInputs();
         loadProfile();
-        loadData(); // Ini juga bakal panggil charts
+        loadData(); 
         displayQuote();
         loadPlatformHistory();
         startCountdown();
     });
 
-// --- CHART LOGIC TERBARU (SEQUENTIAL) ---
+    // --- CHART LOGIC TERBARU (SEQUENTIAL) ---
     function renderCharts(data) {
-        // Ambil data yang statusnya 'Selesai', urutkan berdasarkan Tanggal pengerjaan
         const finishedTOs = data.filter(i => i.status === 'Selesai').sort((a,b) => new Date(a.date) - new Date(b.date));
         
         const chartSec = document.getElementById('chartSection');
@@ -390,8 +407,6 @@
         }
         chartSec.style.display = 'block';
 
-        // --- 1. SETUP GRAFIK GLOBAL (URUT WAKTU) ---
-        // Labelnya kita buat simpel: Nama Platform + Nama TO (Tanpa Tanggal biar ga bingung)
         const globalLabels = finishedTOs.map(i => `${i.platform} - ${i.toName}`);
         const globalScores = finishedTOs.map(i => i.officialScore > 0 ? i.officialScore : i.calcScore);
 
@@ -401,63 +416,54 @@
         globalChartInstance = new Chart(ctxGlobal, {
             type: 'line',
             data: {
-                labels: globalLabels, // Label urut sesuai pengerjaan
+                labels: globalLabels, 
                 datasets: [{
                     label: 'Skor',
                     data: globalScores,
-                    borderColor: '#D4AF37', // Warna Emas
+                    borderColor: '#D4AF37', 
                     backgroundColor: 'rgba(212, 175, 55, 0.1)',
                     borderWidth: 3,
                     pointBackgroundColor: '#fff',
-                    pointRadius: 5, // Titik agak besar biar jelas
+                    pointRadius: 5, 
                     pointHoverRadius: 7,
-                    tension: 0.3, // Garis agak melengkung dikit
+                    tension: 0.3, 
                     fill: true
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }, // Hilangkan legenda "Skor"
+                plugins: { legend: { display: false } },
                 scales: {
                     y: { 
                         grid: { color: 'rgba(255,255,255,0.1)' }, 
                         ticks: { color: '#ccc' },
-                        suggestedMin: 400 // Biar grafik ga mulai dari 0 (lebih fokus)
+                        suggestedMin: 400 
                     },
                     x: { 
                         grid: { display: false }, 
-                        ticks: { display: false } // Hilangkan tulisan bawah biar bersih (karena sudah ada tooltip)
+                        ticks: { display: false } 
                     }
                 },
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
+                interaction: { intersect: false, mode: 'index' },
             }
         });
 
-        // --- 2. SETUP GRAFIK PER PLATFORM (START SAMA) ---
-        
-        // Langkah A: Kelompokkan nilai per platform
+        // 2. PLATFORM CHART (SEQUENTIAL)
         let platforms = {};
         finishedTOs.forEach(i => {
             if(!platforms[i.platform]) platforms[i.platform] = [];
-            // Kita cuma butuh nilainya saja, urut dari yang pertama dikerjakan
             platforms[i.platform].push(i.officialScore > 0 ? i.officialScore : i.calcScore);
         });
 
-        // Langkah B: Cari siapa yang paling rajin (TO terbanyak) buat nentuin panjang sumbu X
         let maxCount = 0;
         for (let p in platforms) {
             if (platforms[p].length > maxCount) maxCount = platforms[p].length;
         }
 
-        // Langkah C: Bikin label sumbu X (TO Ke-1, TO Ke-2, dst)
         let platformLabels = [];
         for(let i=1; i<=maxCount; i++) platformLabels.push("TO Ke-" + i);
 
-        // Langkah D: Siapkan Datasets warna-warni
         const colors = ['#4A90E2', '#ff4757', '#2ed573', '#eccc68', '#ffa502', '#d1ccc0'];
         let datasets = [];
         let colorIdx = 0;
@@ -465,7 +471,7 @@
         for (let p in platforms) {
             datasets.push({
                 label: p,
-                data: platforms[p], // Data otomatis masuk ke index 0, 1, 2... (Start kiri)
+                data: platforms[p], 
                 borderColor: colors[colorIdx % colors.length],
                 backgroundColor: colors[colorIdx % colors.length],
                 borderWidth: 2,
@@ -482,7 +488,7 @@
         platformChartInstance = new Chart(ctxPlatform, {
             type: 'line',
             data: {
-                labels: platformLabels, // Sumbu X: TO Ke-1, TO Ke-2...
+                labels: platformLabels, 
                 datasets: datasets
             },
             options: {
@@ -491,11 +497,7 @@
                 plugins: { 
                     legend: { labels: { color: '#fff', boxWidth: 10, font:{size:11} } },
                     tooltip: {
-                        callbacks: {
-                            title: function(context) {
-                                return context[0].label; // Judul Tooltip: "TO Ke-X"
-                            }
-                        }
+                        callbacks: { title: function(context) { return context[0].label; } }
                     }
                 },
                 scales: {
@@ -505,13 +507,12 @@
                     },
                     x: { 
                         grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#aaa', font:{size:10} } // Tampilkan tulisan "TO Ke-1"
+                        ticks: { color: '#aaa', font:{size:10} } 
                     }
                 }
             }
         });
     }
-
 
     // --- CORE LOGIC ---
     function startCountdown() {
@@ -627,12 +628,8 @@
 
         if (finished.length === 0) { raporContainer.innerHTML = ''; return; }
 
-        // UPDATE LOGIC: Masukkan jika Full Subtes ATAU punya Official Score
         let validTOs = finished.filter(item => {
-            // Cek 1: Punya official score (misal Snbt.id)
             if (item.officialScore && item.officialScore > 0) return true;
-            
-            // Cek 2: Punya kalkulasi subtes lengkap
             if(!item.subtestScores) return false;
             let count = 0;
             for(let key in item.subtestScores) if(item.subtestScores[key].t > 0) count++;
@@ -676,7 +673,6 @@
             let totalBenar = 0;
             let totalSoal = 0;
             
-            // Hanya ambil statistik subtes dari TO yang punya rincian subtes
             finished.forEach(item => {
                 if(item.subtestScores && item.subtestScores[sub.id] && item.subtestScores[sub.id].t > 0) {
                     totalBenar += item.subtestScores[sub.id].b;
@@ -721,7 +717,7 @@
         const c = document.getElementById('listsContainer');
         
         loadRapor(); 
-        renderCharts(d); // Panggil fungsi render chart di sini
+        renderCharts(d); 
 
         if(d.length === 0) {
             c.innerHTML = `
@@ -738,6 +734,7 @@
         const plans = sorted.filter(i => i.status === 'Belum Daftar');
         const history = sorted.filter(i => i.status === 'Selesai');
 
+        // Pastikan nama file 'icon_history.png', 'icon_input.png' dll ada di folder
         if (priorities.length > 0) {
             html += `<div class="section-header"><img src="assets/img/icon_history.png" class="icon-title"> PRIORITAS</div>`;
             priorities.forEach(i => { html += renderItem(i); });
@@ -779,7 +776,6 @@
         }
         
         let labelHTML = '';
-        // LOGIKA BARU UNTUK LABEL FULL TO
         let hasSubtest = false;
         if(i.subtestScores) {
             let count=0;
