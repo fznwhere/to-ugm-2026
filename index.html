@@ -398,17 +398,41 @@
         startCountdown();
     });
 
-    // --- CHART LOGIC TERBARU (SEQUENTIAL) ---
+// --- CHART LOGIC TERBARU (SEQUENTIAL & ANTI-PARSIAL) ---
     function renderCharts(data) {
-        const finishedTOs = data.filter(i => i.status === 'Selesai').sort((a,b) => new Date(a.date) - new Date(b.date));
+        // FILTER: Hanya ambil yang Selesai DAN Bukan Parsial
+        const finishedTOs = data.filter(i => {
+            // Syarat 1: Harus status Selesai
+            if (i.status !== 'Selesai') return false;
+
+            // Syarat 2: Cek Kelengkapan Subtes (Full = 7 Mapel)
+            let isFullSubtest = false;
+            if (i.subtestScores) {
+                let count = 0;
+                // Kita hitung ada berapa mapel yang total soalnya (t) > 0
+                for(let k in i.subtestScores) {
+                    if(i.subtestScores[k].t > 0) count++;
+                }
+                // Kalau jumlahnya 7, berarti Full TO
+                if(count === 7) isFullSubtest = true;
+            }
+
+            // KEPUTUSAN FINAL:
+            // Masuk grafik CUMA KALAU: Punya Skor Resmi (kayak Snbt.id) ATAU Full 7 Subtes
+            // Kalau cuma isi 1 mapel (Parsial) & tidak ada skor resmi -> DIBUANG DARI GRAFIK
+            return (i.officialScore > 0 || isFullSubtest);
+
+        }).sort((a,b) => new Date(a.date) - new Date(b.date)); // Urutkan tanggal
         
         const chartSec = document.getElementById('chartSection');
+        // Kalau data valid kurang dari 2, sembunyikan grafik biar ga aneh
         if(finishedTOs.length < 2) {
             chartSec.style.display = 'none'; 
             return;
         }
         chartSec.style.display = 'block';
 
+        // --- 1. SETUP GRAFIK GLOBAL (URUT WAKTU) ---
         const globalLabels = finishedTOs.map(i => `${i.platform} - ${i.toName}`);
         const globalScores = finishedTOs.map(i => i.officialScore > 0 ? i.officialScore : i.calcScore);
 
@@ -451,7 +475,7 @@
             }
         });
 
-        // 2. PLATFORM CHART (SEQUENTIAL)
+        // --- 2. SETUP GRAFIK PER PLATFORM (START SAMA) ---
         let platforms = {};
         finishedTOs.forEach(i => {
             if(!platforms[i.platform]) platforms[i.platform] = [];
@@ -515,7 +539,6 @@
             }
         });
     }
-
     // --- CORE LOGIC ---
     function startCountdown() {
         const target = new Date("2026-04-21T00:00:00").getTime();
