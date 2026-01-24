@@ -9,6 +9,8 @@
     <meta name="theme-color" content="#0C1B2E">
 
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Fredoka+One&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -35,7 +37,6 @@
             background-position: center; background-size: cover;
             min-height: 100vh;
             display: flex; flex-direction: column;
-            /* Pastikan tidak ada margin bawah */
             margin-bottom: 0 !important;
         }
 
@@ -69,22 +70,12 @@
             flex: 1;
         }
         
-        .quote-text {
-            font-size: 0.85em;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-top: 5px;
-            font-weight: normal;
-            opacity: 0.9;
-            line-height: 1.4;
-        }
+        .quote-text { font-size: 0.85em; color: var(--text-secondary); font-style: italic; margin-top: 5px; font-weight: normal; opacity: 0.9; line-height: 1.4; }
         
-        .btn-settings-img {
-            width: 38px; height: 38px;
-            object-fit: contain; cursor: pointer;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            transition: transform 0.2s;
-            margin-top: 5px;
+        .btn-settings-img { 
+            width: 38px; height: 38px; object-fit: contain; cursor: pointer; 
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4)); 
+            transition: transform 0.2s; margin-top: 5px; 
         }
         .btn-settings-img:active { transform: scale(0.9); }
 
@@ -93,54 +84,38 @@
         .health-bar-fill { height: 100%; background: linear-gradient(90deg, #ff4757, #e84118); width: 0%; display: flex; align-items: center; justify-content: center; transition: width 1s ease, background 1s ease; }
         .health-text { font-size: 0.7em; color: white; font-weight: bold; position: absolute; top:0; width: 100%; text-align: center; line-height: 22px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); letter-spacing: 0.5px; z-index: 2; }
 
-        /* JUDUL DENGAN IKON */
         h3 { 
-            color: var(--accent-gold); 
-            margin-top: 0; 
-            border-bottom: 1px dashed var(--accent-gold); 
-            padding-bottom: 10px; 
-            font-size: 1.2em;
-            display: flex; align-items: center; gap: 10px;
+            color: var(--accent-gold); margin-top: 0; 
+            border-bottom: 1px dashed var(--accent-gold); padding-bottom: 10px; 
+            font-size: 1.2em; display: flex; align-items: center; gap: 10px; 
         }
-        .icon-title { width: 28px; height: 28px; object-fit: contain; }
+
+        /* --- GLOBAL ICON STYLE (AUTO GLOW) --- */
+        .icon-title { 
+            width: 28px; height: 28px; object-fit: contain;
+            /* Efek Drop Shadow Emas biar menyala */
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.9)); 
+        }
 
         /* --- TARGET CARD --- */
         .target-card-contract {
-            background-color: rgba(0,0,0,0.6); 
-            border: 2px solid var(--accent-gold);
-            border-radius: 16px;
-            padding: 20px;
-            position: relative; 
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            margin-bottom: 20px;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background-color: rgba(0,0,0,0.6); border: 2px solid var(--accent-gold); border-radius: 16px; padding: 20px;
+            position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 20px;
+            min-height: 120px; display: flex; align-items: center; justify-content: space-between;
         }
-
         .target-card-contract::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('assets/img/target_bg.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.5; 
-            z-index: 0;
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('assets/img/target_bg.png'); background-size: cover; background-position: center; opacity: 0.5; z-index: 0;
         }
-        
         .target-info { z-index: 2; position: relative; max-width: 65%; }
         .target-score-box { z-index: 2; position: relative; text-align: right; background: rgba(0,0,0,0.5); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(5px); }
-
         .target-label { color: var(--accent-orange); font-size: 0.65em; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; margin-bottom: 5px; border-bottom: 2px solid var(--accent-orange); display: inline-block; padding-bottom: 2px; }
         .target-prodi { font-size: 1.6em; color: var(--accent-gold); margin: 5px 0 0 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-family: 'Mochiy Pop P One', cursive; line-height: 1.1; }
         .target-univ { font-size: 0.8em; color: #ccc; font-weight: normal; margin-top: 5px; font-style: italic; }
         .score-label-small { font-size: 0.6em; color: #aaa; display: block; letter-spacing: 1px; }
         .score-value-big { font-size: 1.8em; color: #fff; font-weight: 800; }
 
-        /* RAPOR GRID */
+        /* RAPOR GRID & CHARTS */
         .rapor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .subtest-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 5px; text-align: center; display: flex; flex-direction: column; align-items: center; position: relative; }
         .subtest-card:nth-child(7) { grid-column: 2; }
@@ -150,20 +125,13 @@
         .percent-badge { position: absolute; bottom: -5px; background: var(--accent-gold); color: #000; font-size: 0.6em; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 1px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .subtest-title { font-size: 0.75em; font-weight: bold; color: var(--accent-gold); margin-bottom: 2px; }
 
-        /* FOOTER (Mentok Bawah - Tanpa Spacer) */
-        .footer-wrapper { 
-            width: 100%; 
-            margin-top: 30px; 
-            display: flex; justify-content: center; position: relative; z-index: 0; 
-            padding-bottom: 0; margin-bottom: 0;
+        .chart-wrapper {
+            position: relative; height: 250px; width: 100%; margin-bottom: 20px;
         }
-        
-        .footer-scene-img { 
-            width: 100%; height: auto; display: block; object-fit: cover; 
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%); 
-            mask-image: linear-gradient(to bottom, transparent 0%, black 25%); 
-            opacity: 0.95; 
-        }
+
+        /* FOOTER */
+        .footer-wrapper { width: 100%; margin-top: 30px; display: flex; justify-content: center; position: relative; z-index: 0; padding-bottom: 0; margin-bottom: 0; }
+        .footer-scene-img { width: 100%; height: auto; display: block; object-fit: cover; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%); mask-image: linear-gradient(to bottom, transparent 0%, black 25%); opacity: 0.95; }
 
         /* INPUTS */
         input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--accent-gold); border-radius: 8px; box-sizing: border-box; background: rgba(0,0,0,0.4); color: var(--text-primary); font-family: var(--font-family); }
@@ -177,12 +145,11 @@
         .btn-cancel { background: rgba(255,255,255,0.1); color: var(--text-secondary); width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; cursor: pointer; border: 1px solid var(--text-secondary); display: none; }
 
         .section-header { font-weight: 800; margin: 30px 0 10px 0; font-size: 1.1em; color: var(--accent-gold); border-left: 4px solid var(--accent-orange); padding-left: 10px; font-family: 'Mochiy Pop P One', cursive; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-        
         .item-row { background: rgba(0,0,0,0.4); border: 1px solid rgba(212, 175, 55, 0.3); padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s; }
         .main-score { font-size: 1.5em; font-weight: 800; line-height: 1; color: var(--accent-gold); }
         .badge-full { display: inline-block; background: rgba(74, 144, 226, 0.2); color: var(--accent-blue); padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-top: 5px; border: 1px solid var(--accent-blue); }
         .badge-partial { display: inline-block; background: rgba(230, 92, 74, 0.2); color: var(--accent-orange); padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-top: 5px; border: 1px solid var(--accent-orange); }
-        .target-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: flex-end; backdrop-filter: blur(3px); }
         .modal-content { background: var(--bg-secondary); border-top: 3px solid var(--accent-gold); padding: 25px; border-radius: 24px 24px 0 0; width: 100%; max-width: 550px; max-height: 85vh; overflow-y: auto; color: white; animation: slideUp 0.3s ease; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
         .detail-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
@@ -195,24 +162,20 @@
         .btn-modal { flex: 1; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
         .btn-edit { background: var(--accent-blue); color: white; }
         .btn-delete { background: var(--accent-orange); color: white; }
+        
+        /* Empty State Image (Pochita Sleep - Double Glow) */
         .empty-state { text-align: center; padding: 40px 20px; opacity: 0.9; }
-        
-        /* EFEK NEON POCHITA */
         .empty-pochita { 
-            width: 150px; 
-            margin-bottom: 15px; 
-            filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #feca57) brightness(1.1);
+            width: 150px; margin-bottom: 15px; 
+            filter: drop-shadow(0 0 5px #ff6b6b) drop-shadow(0 0 10px #feca57) brightness(1.1); 
         }
         
-        @media (max-width: 400px) { 
-            .app-title { font-size: 1.4em; }
-            .btn-settings { padding: 6px 10px; font-size: 0.75em; }
-        }
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(0deg); } }
     </style>
     
     <script>
         if ('serviceWorker' in navigator) {
+            // Pastikan sw-final.js diupdate versinya setelah ini!
             navigator.serviceWorker.register('sw-final.js').catch(err => console.log(err));
         }
     </script>
@@ -258,11 +221,12 @@
             </select>
         </div>
         <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold); padding: 10px; border-radius: 10px; margin: 15px 0;">
-            <label style="font-size:0.8em; color:var(--accent-gold); font-weight:bold; display:block; text-align:center; margin-bottom: 5px;">SKOR AKHIR (Jika Ada)</label>
+            <label style="font-size:0.8em; color:var(--accent-gold); font-weight:bold; display:block; text-align:center; margin-bottom: 5px;">SKOR AKHIR (Jika Ada/Snbt.id)</label>
             <input type="number" id="officialScore" placeholder="0" style="font-size:1.5em; text-align:center; background:transparent; border:none; color:var(--accent-gold); font-weight:bold; margin:0;">
+            <div style="text-align:center; font-size:0.65em; color:var(--text-secondary); margin-top:2px;">*Isi ini saja jika tidak ada rincian subtes</div>
         </div>
         <div class="manual-calc-box">
-            <div style="font-size:0.8em; margin-bottom:10px; color:var(--text-secondary)">Isi Benar (B) & Kosong (K)</div>
+            <div style="font-size:0.8em; margin-bottom:10px; color:var(--text-secondary)">Isi Benar (B) & Kosong (K) - *Opsional</div>
             <div class="col-header">
                 <div style="text-align:left">SUBTES</div>
                 <div>B</div>
@@ -277,6 +241,27 @@
 
     <div id="raporSection"></div>
 
+    <div class="glass-card" id="chartSection" style="display:none;">
+        <h3 style="margin-bottom:15px;">
+            <img src="assets/img/icon_tren.png" class="icon-title">
+            Tren Progress
+        </h3>
+        
+        <div style="margin-bottom:20px;">
+            <div style="font-size:0.8em; color:var(--accent-blue); margin-bottom:5px; font-weight:bold;">GRAFIK GABUNGAN</div>
+            <div class="chart-wrapper">
+                <canvas id="globalChart"></canvas>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+            <div style="font-size:0.8em; color:var(--accent-orange); margin-bottom:5px; font-weight:bold;">PER PLATFORM (START SAMA)</div>
+            <div class="chart-wrapper">
+                <canvas id="platformChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div id="listsContainer"></div>
     
 </div> 
@@ -288,9 +273,7 @@
 <div class="modal-overlay" id="settingsModal">
     <div class="modal-content">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; border:none; color:var(--accent-gold);">
-                Target Jurusan
-            </h3>
+            <h3 style="margin:0; border:none; color:var(--accent-gold);">Target Jurusan</h3>
             <button onclick="closeSettings()" style="background:none; border:none; color:var(--text-secondary); font-size:1.5em;">&times;</button>
         </div>
         <input type="text" id="userNameInput" placeholder="Nama / Judul Aplikasi">
@@ -319,7 +302,7 @@
 </div>
 
 <script>
-    // --- DATABASE LENGKAP ---
+    // --- DATABASE ---
     const MAJOR_DB = [
         { id: 0, name: "-- Pilih Prodi --", grade: 0, type: "" },
         // SAINTEK
@@ -361,7 +344,7 @@
         { id: 213, name: "Sastra Jepang", grade: 660, type: "S1" },
         { id: 214, name: "Sejarah", grade: 640, type: "S1" },
         { id: 215, name: "Sastra Jawa", grade: 600, type: "S1" },
-        // VOKASI D4
+        // VOKASI
         { id: 301, name: "Manajemen Info. Kesehatan (D4)", grade: 695, type: "D4" },
         { id: 302, name: "Akuntansi Sektor Publik (D4)", grade: 685, type: "D4" },
         { id: 303, name: "Tek. Rekayasa Perangkat Lunak (D4)", grade: 685, type: "D4" },
@@ -371,15 +354,15 @@
         { id: 307, name: "Teknologi Rekayasa Internet (D4)", grade: 660, type: "D4" },
         { id: 308, name: "Tek. Pengelolaan Pemeliharaan Infra (D4)", grade: 640, type: "D4" },
         { id: 309, name: "Teknologi Veteriner (D4)", grade: 620, type: "D4" },
-        // VOKASI D3
         { id: 401, name: "Prodi D3 (Pilihan Luar)", grade: 600, type: "D3" }
     ];
 
+    // CONFIG SOAL (20 Soal PK)
     const SUBTEST_CONFIG = [
         { id: 'pu', label: 'PU', total: 30, weight: 1.0 },
         { id: 'ppu', label: 'PPU', total: 20, weight: 1.0 },
         { id: 'pbm', label: 'PBM', total: 20, weight: 1.0 },
-        { id: 'pk', label: 'PK', total: 20, weight: 1.3 },
+        { id: 'pk', label: 'PK', total: 20, weight: 1.3 }, 
         { id: 'ind', label: 'B.Indo', total: 30, weight: 1.0 },
         { id: 'ing', label: 'B.Ing', total: 20, weight: 1.0 },
         { id: 'pm', label: 'PM', total: 20, weight: 1.2 } 
@@ -392,65 +375,161 @@
         "Hiduplah, dan wujudkan impianmu. — (Pochita)",
         "Woi! Kalau mau hidup enak, habisin dulu soal-soal ini! — (Denji)",
         "Aku cuma pengen hidup normal... jadi mahasiswa UGM! Kamu juga kan? — (Denji)",
-        "Kalau kita selesaikan ujian ini, apa kita boleh tidur nyenyak? — (Denji)",
-        "Jangan mati konyol karena males belajar! Ayo gas! — (Denji)",
         "Berlututlah wahai soal susah! Sang Power yang jenius akan melibasmu! — (Power)",
         "Jangan takut! Ada aku yang hebat ini. UTBK itu kecil! — (Power)",
-        "Dengar ya, kalau mau lulus, kamu harus belajar dengan benar. — (Asa Mitaka)",
         "Ubah rasa takut gagalmu menjadi senjata! — (Asa Mitaka)",
-        "Aku tidak bodoh! Soal segini pasti bisa kucari jawabannya. — (Asa Mitaka)",
         "Mulai sekarang, belajarlah sedikit lebih egois demi masa depanmu. — (Asa Mitaka)",
-        "Easy revenge! Ayo balas dendam ke nilai tryout yang kemarin. — (Aki Hayakawa)",
-        "Cuma mereka yang 'gila' belajarnya yang bakal menang. — (Kishibe)"
+        "Easy revenge! Ayo balas dendam ke nilai tryout yang kemarin. — (Aki Hayakawa)"
     ];
 
     let userProfile = { name: "TO UGM 2026", choices: [101, 0, 0, 0] };
     let isEditing = false;
     let selectedItemId = null;
+    let globalChartInstance = null;
+    let platformChartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         fixDataTypes(); 
         generateInputs();
         loadProfile();
-        loadData();
-        loadRapor(); 
+        loadData(); 
         displayQuote();
         loadPlatformHistory();
         startCountdown();
     });
 
+    // --- CHART LOGIC TERBARU (SEQUENTIAL) ---
+    function renderCharts(data) {
+        const finishedTOs = data.filter(i => i.status === 'Selesai').sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        const chartSec = document.getElementById('chartSection');
+        if(finishedTOs.length < 2) {
+            chartSec.style.display = 'none'; 
+            return;
+        }
+        chartSec.style.display = 'block';
+
+        const globalLabels = finishedTOs.map(i => `${i.platform} - ${i.toName}`);
+        const globalScores = finishedTOs.map(i => i.officialScore > 0 ? i.officialScore : i.calcScore);
+
+        const ctxGlobal = document.getElementById('globalChart').getContext('2d');
+        if(globalChartInstance) globalChartInstance.destroy();
+
+        globalChartInstance = new Chart(ctxGlobal, {
+            type: 'line',
+            data: {
+                labels: globalLabels, 
+                datasets: [{
+                    label: 'Skor',
+                    data: globalScores,
+                    borderColor: '#D4AF37', 
+                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointRadius: 5, 
+                    pointHoverRadius: 7,
+                    tension: 0.3, 
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' }, 
+                        ticks: { color: '#ccc' },
+                        suggestedMin: 400 
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { display: false } 
+                    }
+                },
+                interaction: { intersect: false, mode: 'index' },
+            }
+        });
+
+        // 2. PLATFORM CHART (SEQUENTIAL)
+        let platforms = {};
+        finishedTOs.forEach(i => {
+            if(!platforms[i.platform]) platforms[i.platform] = [];
+            platforms[i.platform].push(i.officialScore > 0 ? i.officialScore : i.calcScore);
+        });
+
+        let maxCount = 0;
+        for (let p in platforms) {
+            if (platforms[p].length > maxCount) maxCount = platforms[p].length;
+        }
+
+        let platformLabels = [];
+        for(let i=1; i<=maxCount; i++) platformLabels.push("TO Ke-" + i);
+
+        const colors = ['#4A90E2', '#ff4757', '#2ed573', '#eccc68', '#ffa502', '#d1ccc0'];
+        let datasets = [];
+        let colorIdx = 0;
+
+        for (let p in platforms) {
+            datasets.push({
+                label: p,
+                data: platforms[p], 
+                borderColor: colors[colorIdx % colors.length],
+                backgroundColor: colors[colorIdx % colors.length],
+                borderWidth: 2,
+                tension: 0.2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            });
+            colorIdx++;
+        }
+
+        const ctxPlatform = document.getElementById('platformChart').getContext('2d');
+        if(platformChartInstance) platformChartInstance.destroy();
+
+        platformChartInstance = new Chart(ctxPlatform, {
+            type: 'line',
+            data: {
+                labels: platformLabels, 
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { labels: { color: '#fff', boxWidth: 10, font:{size:11} } },
+                    tooltip: {
+                        callbacks: { title: function(context) { return context[0].label; } }
+                    }
+                },
+                scales: {
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' }, 
+                        ticks: { color: '#ccc' } 
+                    },
+                    x: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#aaa', font:{size:10} } 
+                    }
+                }
+            }
+        });
+    }
+
+    // --- CORE LOGIC ---
     function startCountdown() {
         const target = new Date("2026-04-21T00:00:00").getTime();
-        const maxDays = 500; 
-
         setInterval(() => {
             const now = new Date().getTime();
             const diff = target - now;
-            
-            if (diff < 0) {
-                document.getElementById("hpText").innerText = "UTBK Telah Dimulai!";
-                document.getElementById("hpBar").style.width = "0%";
-                return;
-            }
-            
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            document.getElementById("hpText").innerText = `HP: ${days} Hari Lagi`;
-            
-            let percent = (days / maxDays) * 100;
+            document.getElementById("hpText").innerText = diff < 0 ? "UTBK Telah Dimulai!" : `HP: ${days} Hari Lagi`;
+            let percent = (days / 500) * 100;
             if(percent > 100) percent = 100;
             document.getElementById("hpBar").style.width = percent + "%";
             
-            if(days < 60) {
-                document.getElementById("hpBar").style.background = "#e84118"; 
-                document.getElementById("hpBar").style.boxShadow = "0 0 10px #e84118"; 
-            } else if(days < 150) {
-                document.getElementById("hpBar").style.background = "#fbc531"; 
-                document.getElementById("hpBar").style.boxShadow = "none";
-            } else {
-                document.getElementById("hpBar").style.background = "#4cd137"; 
-                document.getElementById("hpBar").style.boxShadow = "none";
-            }
-
+            let color = days < 60 ? "#e84118" : (days < 150 ? "#fbc531" : "#4cd137");
+            document.getElementById("hpBar").style.background = color; 
         }, 1000);
     }
 
@@ -541,7 +620,7 @@
         } else d.push(entry);
 
         localStorage.setItem('sicolokDataV7', JSON.stringify(d));
-        resetForm(); loadData(); loadRapor();
+        resetForm(); loadData();
     }
 
     function loadRapor() {
@@ -551,7 +630,8 @@
 
         if (finished.length === 0) { raporContainer.innerHTML = ''; return; }
 
-        let fullTOs = finished.filter(item => {
+        let validTOs = finished.filter(item => {
+            if (item.officialScore && item.officialScore > 0) return true;
             if(!item.subtestScores) return false;
             let count = 0;
             for(let key in item.subtestScores) if(item.subtestScores[key].t > 0) count++;
@@ -559,10 +639,10 @@
         });
 
         let totalHtml = '';
-        if(fullTOs.length > 0) {
+        if(validTOs.length > 0) {
             let totalScore = 0;
-            fullTOs.forEach(i => totalScore += (i.officialScore > 0 ? i.officialScore : i.calcScore));
-            let avgScore = Math.round(totalScore / fullTOs.length);
+            validTOs.forEach(i => totalScore += (i.officialScore > 0 ? i.officialScore : i.calcScore));
+            let avgScore = Math.round(totalScore / validTOs.length);
             
             let targetScore = 0;
             if (userProfile.choices[0] > 0) {
@@ -578,11 +658,11 @@
             totalHtml = `
             <div class="glass-card" style="text-align:center; border: 2px solid var(${statusColor}); padding: 15px;">
                 <h3 style="margin:0; border:none; font-size:1em; justify-content:center;">
-                    <img src="assets/img/icon_analysis.png" class="icon-title">
-                    Rata-rata (Full TO)
+                    <img src="assets/img/icon_rata.png" class="icon-title">
+                    Rata-rata Skor (All TO)
                 </h3>
                 <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:10px;">
-                    <div><div style="font-size:0.7em; color:var(--text-secondary)">Skor Kamu</div><div style="font-size:1.8em; font-weight:bold; color:var(${statusColor})">${avgScore}</div></div>
+                    <div><div style="font-size:0.7em; color:var(--text-secondary)">Rerata Kamu</div><div style="font-size:1.8em; font-weight:bold; color:var(${statusColor})">${avgScore}</div></div>
                     <div style="font-size:1.2em; color:var(--text-secondary)">vs</div>
                     <div><div style="font-size:0.7em; color:var(--text-secondary)">Target</div><div style="font-size:1.5em; font-weight:bold; color:var(--text-primary)">${targetScore}</div></div>
                 </div>
@@ -624,7 +704,7 @@
         });
         subtestHtml += `</div>`;
 
-        raporContainer.innerHTML = totalHtml + (fullTOs.length > 0 || finished.length > 0 ? `
+        raporContainer.innerHTML = totalHtml + (finished.length > 0 ? `
         <div class="glass-card" style="margin-top:20px;">
             <h3 style="border:none; margin:0; text-align:center; justify-content:center;">
                 <img src="assets/img/icon_analysis.png" class="icon-title">
@@ -638,6 +718,9 @@
         const d = JSON.parse(localStorage.getItem('sicolokDataV7')) || [];
         const c = document.getElementById('listsContainer');
         
+        loadRapor(); 
+        renderCharts(d); 
+
         if(d.length === 0) {
             c.innerHTML = `
             <div class="empty-state">
@@ -653,6 +736,7 @@
         const plans = sorted.filter(i => i.status === 'Belum Daftar');
         const history = sorted.filter(i => i.status === 'Selesai');
 
+        // ICON LISTS (Tetap Pakai yang Lama)
         if (priorities.length > 0) {
             html += `<div class="section-header"><img src="assets/img/icon_history.png" class="icon-title"> PRIORITAS</div>`;
             priorities.forEach(i => { html += renderItem(i); });
@@ -693,13 +777,24 @@
             `;
         }
         
-        let takenSub = [];
+        let labelHTML = '';
+        let hasSubtest = false;
         if(i.subtestScores) {
-            for(let [k, v] of Object.entries(i.subtestScores)) {
-                if(v.t > 0) takenSub.push(SUBTEST_CONFIG.find(s=>s.id==k).label);
-            }
+            let count=0;
+            for(let k in i.subtestScores) if(i.subtestScores[k].t > 0) count++;
+            if(count===7) hasSubtest = true;
         }
-        let labelHTML = takenSub.length === 7 ? `<span class="badge-full">Full TO</span>` : (takenSub.length > 0 ? `<span class="badge-partial">Parsial: ${takenSub.join(', ')}</span>` : `<span style="font-size:0.7em; color:#777;">Manual</span>`);
+
+        if (i.officialScore > 0 && !hasSubtest) {
+            labelHTML = `<span class="badge-full">Full Score</span>`;
+        } else if (hasSubtest) {
+            labelHTML = `<span class="badge-full">Full Analysis</span>`;
+        } else if (i.subtestScores) {
+            let takenSub = [];
+            for(let [k, v] of Object.entries(i.subtestScores)) if(v.t > 0) takenSub.push(SUBTEST_CONFIG.find(s=>s.id==k).label);
+            if(takenSub.length > 0) labelHTML = `<span class="badge-partial">Parsial: ${takenSub.join(', ')}</span>`;
+            else labelHTML = `<span style="font-size:0.7em; color:#777;">Manual</span>`;
+        }
 
         return `
         <div class="item-row" onclick="openDetails('${i.id}')">
@@ -720,20 +815,33 @@
         if(!item) { alert("Error: Data tidak sinkron."); return; }
         document.getElementById('detailTitle').innerText = `${item.platform} - ${item.toName}`;
         
+        let contentHTML = '';
+        if (item.officialScore > 0) {
+            contentHTML += `<div style="text-align:center; padding:15px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:0.8em; color:var(--text-secondary)">Skor Akhir (Tanpa Rincian)</div>
+                <div style="font-size:2.5em; font-weight:bold; color:var(--accent-gold)">${item.officialScore}</div>
+            </div>`;
+        }
+
         let tableHTML = `<table class="detail-table"><thead><tr><th>Subtes</th><th>Benar</th><th>Salah</th><th>Kosong</th></tr></thead><tbody>`;
         let hasData = false;
         if (item.subtestScores) {
             SUBTEST_CONFIG.forEach(s => {
                 if (item.subtestScores[s.id]) {
                     const d = item.subtestScores[s.id];
-                    tableHTML += `<tr><td>${s.label}</td><td class="val-b">${d.b}</td><td class="val-s">${d.t-(d.b+d.k)}</td><td class="val-k">${d.k}</td></tr>`;
-                    hasData = true;
+                    if (d.t > 0) {
+                        tableHTML += `<tr><td>${s.label}</td><td class="val-b">${d.b}</td><td class="val-s">${d.t-(d.b+d.k)}</td><td class="val-k">${d.k}</td></tr>`;
+                        hasData = true;
+                    }
                 }
             });
         }
-        if(!hasData) tableHTML += `<tr><td colspan="4" style="text-align:center; padding:20px;">Hanya input skor akhir</td></tr>`;
         tableHTML += `</tbody></table>`;
-        document.getElementById('detailContent').innerHTML = tableHTML;
+        
+        if(hasData) contentHTML += tableHTML;
+        else if(!item.officialScore) contentHTML += `<div style="text-align:center; padding:20px;">Belum ada data nilai.</div>`;
+
+        document.getElementById('detailContent').innerHTML = contentHTML;
         document.getElementById('detailsModal').style.display = 'flex';
     }
 
@@ -753,7 +861,6 @@
             localStorage.setItem('sicolokDataV7', JSON.stringify(d));
             closeDetails();
             loadData();
-            loadRapor();
         }
     }
 
@@ -799,7 +906,7 @@
         html += `<optgroup label="SAINTEK">` + MAJOR_DB.filter(x=>x.id>=100 && x.id<200).map(x=>`<option value="${x.id}">${x.name}</option>`).join('') + `</optgroup>`;
         html += `<optgroup label="SOSHUM">` + MAJOR_DB.filter(x=>x.id>=200 && x.id<300).map(x=>`<option value="${x.id}">${x.name}</option>`).join('') + `</optgroup>`;
         html += `<optgroup label="VOKASI (D4)">` + MAJOR_DB.filter(x=>x.id>=300 && x.id<400).map(x=>`<option value="${x.id}">${x.name}</option>`).join('') + `</optgroup>`;
-        html += `<optgroup label="VOKASI (D3)">` + MAJOR_DB.filter(x=>x.id>=400).map(x=>`<option value="${x.id}">${x.name}</option>`).join('') + `</optgroup>`;
+        html += `<optgroup label="VOKASI (D3)">` + MAJOR_DB.filter(x=>x.id>=401).map(x=>`<option value="${x.id}">${x.name}</option>`).join('') + `</optgroup>`;
         ids.forEach((id, idx) => {
             const el = document.getElementById(id);
             if(el) { el.innerHTML = html; el.value = userProfile.choices[idx]; }
@@ -834,8 +941,6 @@
         
         if(userProfile.choices[0] > 0) {
             let m = MAJOR_DB.find(x => x.id == userProfile.choices[0]);
-            
-            // TARGET CARD FINAL
             html += `
             <div class="target-card-contract">
                 <div class="target-info">
@@ -843,7 +948,6 @@
                     <div class="target-prodi">${m.name}</div>
                     <div class="target-univ">Universitas Gadjah Mada</div>
                 </div>
-                
                 <div class="target-score-box">
                     <span class="score-label-small">REQUIRED</span>
                     <span class="score-value-big">${m.grade}</span>
