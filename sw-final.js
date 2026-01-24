@@ -1,4 +1,4 @@
-const CACHE_NAME = 'to-ugm-v10'; // Versi dinaikkan agar cache diperbarui
+const CACHE_NAME = 'to-ugm-v10.1.1.1.1.1.1'; // Versi dinaikkan agar cache diperbarui
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
